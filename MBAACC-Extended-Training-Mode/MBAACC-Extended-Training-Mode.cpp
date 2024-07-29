@@ -2566,9 +2566,9 @@ int main(int argc, char* argv[])
                 int nP1Blocking = nReadResult;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Blocking + 0xAFC), &nReadResult, 1, 0);
                 int nP2Blocking = nReadResult;
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead - 0xAFC), &nReadResult, 1, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead - 0xAFC), &nReadResult, 4, 0);
                 int nP1Pattern = nReadResult;
-                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 1, 0);
+                ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
                 int nP2Pattern = nReadResult;
 
                 if (nP1Blocking == 1)
@@ -2576,106 +2576,113 @@ int main(int argc, char* argv[])
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0x320), &nReadResult, 4, 0);
                     setBlockingAnimationPointers.insert(nReadResult);
                 }
+                else
+                {
+                    switch (nP1Pattern)
+                    {
+                    case 0:
+                    case 10:
+                    case 11:
+                    case 12:
+                    case 13:
+                    case 14:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 35:
+                    case 36:
+                    case 37:
+                    case 38:
+                    case 39:
+                    case 40:
+                    case 360:
+                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0x320), &nReadResult, 4, 0);
+                        setIdleAnimationPointers.insert(nReadResult);
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
                 if (nP2Blocking == 1)
                 {
                     ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0xAFC + 0x320), &nReadResult, 4, 0);
                     setBlockingAnimationPointers.insert(nReadResult);
                 }
-
-                if (nP1Blocking != 1 &&
-                    (nP1Pattern == 0 || nP1Pattern == 10 || nP1Pattern == 11 || nP1Pattern == 12 || nP1Pattern == 13 || nP1Pattern == 14 || nP1Pattern == 35 || nP1Pattern == 36 || nP1Pattern == 37 || nP1Pattern == 17 || nP1Pattern == 18 || nP1Pattern == 19 || nP1Pattern == 38 || nP1Pattern == 39 || nP1Pattern == 40 || nP1Pattern == 360))
+                else
                 {
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0x320), &nReadResult, 4, 0);
-                    setIdleAnimationPointers.insert(nReadResult);
+                    switch (nP2Blocking)
+                    {
+                    case 0:
+                    case 10:
+                    case 11:
+                    case 12:
+                    case 13:
+                    case 14:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 35:
+                    case 36:
+                    case 37:
+                    case 38:
+                    case 39:
+                    case 40:
+                    case 360:
+                        ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0xAFC + 0x320), &nReadResult, 4, 0);
+                        setIdleAnimationPointers.insert(nReadResult);
+                        break;
+                    default:
+                        break;
+                    }
                 }
-                if (nP2Blocking != 1 &&
-                    (nP2Pattern == 0 || nP2Pattern == 10 || nP2Pattern == 11 || nP2Pattern == 12 || nP2Pattern == 13 || nP2Pattern == 14 || nP2Pattern == 35 || nP2Pattern == 36 || nP2Pattern == 37 || nP2Pattern == 17 || nP2Pattern == 18 || nP2Pattern == 19 || nP2Pattern == 38 || nP2Pattern == 39 || nP2Pattern == 40 || nP2Pattern == 360))
-                {
-                    ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Struct + 0xAFC + 0x320), &nReadResult, 4, 0);
-                    setIdleAnimationPointers.insert(nReadResult);
-                }
-#pragma endregion
 
 #pragma region HIGHLIGHTING
-                if (nBlockingHighlightSetting == NO_HIGHLIGHT)
+
+                std::array<uint8_t, 3> arrHighlightColor;
+
+                switch (nBlockingHighlightSetting)
                 {
-                    for (auto f : setBlockingAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
-                }
-                else if (nBlockingHighlightSetting == RED_HIGHLIGHT)
-                {
-                    for (auto f : setBlockingAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
-                }
-                else if (nBlockingHighlightSetting == GREEN_HIGHLIGHT)
-                {
-                    for (auto f : setBlockingAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
-                }
-                else if (nBlockingHighlightSetting == BLUE_HIGHLIGHT)
-                {
-                    for (auto f : setBlockingAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                    }
+                default:
+                case NO_HIGHLIGHT:
+                    arrHighlightColor = { 255, 255, 255 };
+                    break;
+                case RED_HIGHLIGHT:
+                    arrHighlightColor = { 255, 0, 0 };
+                    break;
+                case GREEN_HIGHLIGHT:
+                    arrHighlightColor = { 0, 255, 0 };
+                    break;
+                case BLUE_HIGHLIGHT:
+                    arrHighlightColor = { 0, 0, 255 };
+                    break;
                 }
 
-                if (nIdleHighlightSetting == NO_HIGHLIGHT)
-                {
-                    for (auto f : setIdleAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
+                for (auto f : setBlockingAnimationPointers) {
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), arrHighlightColor.data(), 3, 0);
                 }
-                else if (nIdleHighlightSetting == RED_HIGHLIGHT)
+
+                switch (nIdleHighlightSetting)
                 {
-                    for (auto f : setIdleAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
+                default:
+                case NO_HIGHLIGHT:
+                    arrHighlightColor = { 255, 255, 255 };
+                    break;
+                case RED_HIGHLIGHT:
+                    arrHighlightColor = { 255, 0, 0 };
+                    break;
+                case GREEN_HIGHLIGHT:
+                    arrHighlightColor = { 0, 255, 0 };
+                    break;
+                case BLUE_HIGHLIGHT:
+                    arrHighlightColor = { 0, 0, 255 };
+                    break;
                 }
-                else if (nIdleHighlightSetting == GREEN_HIGHLIGHT)
-                {
-                    for (auto f : setIdleAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                    }
+
+                for (auto f : setIdleAnimationPointers) {
+                    WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), arrHighlightColor.data(), 3, 0);
                 }
-                else if (nIdleHighlightSetting == BLUE_HIGHLIGHT)
-                {
-                    for (auto f : setIdleAnimationPointers) {
-                        nWriteBuffer = 255;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x1A), &nWriteBuffer, 1, 0);
-                        nWriteBuffer = 0;
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), &nWriteBuffer, 1, 0);
-                        WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x19), &nWriteBuffer, 1, 0);
-                    }
-                }
+
 #pragma endregion
 
                 // This locks all the code that follows to the framerate of the game
