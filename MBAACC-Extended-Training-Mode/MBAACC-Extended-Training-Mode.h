@@ -8,6 +8,7 @@
 #include <chrono>
 #include <set>
 #include <unordered_set>
+#include <thread>
 
 #include "json.hpp"
 
@@ -15,6 +16,7 @@
 #include "CharacterData.h"
 #include "PointerManager.h"
 #include "FrameDisplay.h"
+#include "HighlightManager.h"
 
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;

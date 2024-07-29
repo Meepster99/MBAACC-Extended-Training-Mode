@@ -1,6 +1,7 @@
 #include "MBAACC-Extended-Training-Mode.h"
 #include "Logger.h"
 
+
 int main(int argc, char* argv[])
 {
     HANDLE hMBAAHandle = 0x0;
@@ -119,6 +120,8 @@ int main(int argc, char* argv[])
     std::unordered_set<DWORD> setIdleAnimationPointers;
     int nBlockingHighlightSetting = NO_HIGHLIGHT;
     int nIdleHighlightSetting = NO_HIGHLIGHT;
+    std::atomic_bool bStopHighlightThread = false;
+    std::thread tHighlightThread = std::thread(HighlightThread, std::ref(hMBAAHandle), std::ref(dwBaseAddress), std::ref(bStopHighlightThread));
 
     Player P1{ 1, dwBaseAddress + adP1Base };
     Player P2{ 2, dwBaseAddress + adP2Base };
@@ -2560,6 +2563,7 @@ int main(int argc, char* argv[])
                 nWriteBuffer = 0;
                 WriteProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwEnemyAction), &nWriteBuffer, 4, 0);
 
+                /*
 #pragma region CACHE_HIGHLIGHTING
                 // Populate the set for pointers to the blocking animation
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1Blocking), &nReadResult, 1, 0);
@@ -2678,12 +2682,16 @@ int main(int argc, char* argv[])
                     arrHighlightColor = { 0, 0, 255 };
                     break;
                 }
-
+                
+                static uint8_t temp = 0;
+                temp++;
+                arrHighlightColor = { temp, 0, 0 };
                 for (auto f : setIdleAnimationPointers) {
                     WriteProcessMemory(hMBAAHandle, (LPVOID)(f + 0x18), arrHighlightColor.data(), 3, 0);
                 }
-
+              
 #pragma endregion
+                */
 
                 // This locks all the code that follows to the framerate of the game
                 // put code that needs to run faster above this
@@ -2806,7 +2814,7 @@ int main(int argc, char* argv[])
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP1HitstunRemaining + dwP2Offset), &nReadResult, 4, 0);
                 int nHitstunRemaining = nReadResult;
                 ReadProcessMemory(hMBAAHandle, (LPVOID)(dwBaseAddress + dwP2PatternRead), &nReadResult, 4, 0);
-                nP2Pattern = nReadResult;
+                int nP2Pattern = nReadResult;
                 //if (nReadResult == 0 || nReadResult == 13)
                 if (nHitstunRemaining == 0 && nP2Pattern != 350)
                 {
@@ -2971,6 +2979,9 @@ int main(int argc, char* argv[])
             }
         }
     }
+
+    bStopHighlightThread = true;
+    tHighlightThread.join();
 
     CloseLogger();
     CloseHandle(hMBAAHandle);
